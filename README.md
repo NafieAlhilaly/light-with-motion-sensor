@@ -1,0 +1,1 @@
+STM32 project to control light bulb using Relay Module and a Motion sensor, interfacing with STM32 using Libopencm3.
