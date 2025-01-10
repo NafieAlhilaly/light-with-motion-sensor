@@ -11,7 +11,8 @@
 #define LIGHT_ON 1
 #define LIGHT_OFF 2
 
-
+#define CPU_FREQ      (84000000)
+#define SYSTICK_FREQ  (1000)
 #define SENSOR_PIN_ID GPIO0
 #define MOTION_SENSOR_PIN_ID GPIO9
 #define RELAY_PIN GPIO7

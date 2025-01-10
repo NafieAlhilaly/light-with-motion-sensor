@@ -1,6 +1,31 @@
 #include "firmware.h"
 
+static volatile uint64_t ticks = 0;
 static volatile state = 0;
+
+void sys_tick_handler(void)
+{
+  ticks++;
+}
+
+static void systick_setup(void)
+{
+  systick_set_frequency(SYSTICK_FREQ, CPU_FREQ);
+  systick_counter_enable();
+  systick_interrupt_enable();
+}
+
+uint64_t get_ticks(void)
+{
+  return ticks;
+}
+
+void delay_ms(uint64_t milleseconds)
+{
+  uint64_t end_time = get_ticks() + milleseconds;
+  while (get_ticks() < end_time)
+    ;
+}
 
 void light_on()
 {
@@ -33,16 +58,19 @@ int main(void)
   clock_setup();
   gpio_setup();
   light_off();
+  systick_setup();
   while (1)
   {
     switch (state)
     {
     case LIGHT_ON:
       light_on();
+      delay_ms(5000);
       change_state(2);
       break;
     case LIGHT_OFF:
       light_off();
+      delay_ms(2000);
       change_state(0);
       break;
     case DETECTING:
