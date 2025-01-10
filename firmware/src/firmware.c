@@ -1,23 +1,55 @@
 #include "firmware.h"
 
-int main(void)
+static volatile state = 0;
+
+void light_on()
+{
+  gpio_clear(GPIOA, RELAY_PIN);
+}
+
+void light_off()
+{
+  gpio_set(GPIOA, RELAY_PIN);
+}
+
+void clock_setup()
 {
   rcc_clock_setup_pll(&rcc_hsi16_configs[RCC_CLOCK_VRANGE1_80MHZ]);
   rcc_periph_clock_enable(RCC_GPIOA);
+}
+void gpio_setup()
+{
   gpio_mode_setup(GPIOA, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, RELAY_PIN);
   gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, SENSOR_PIN_ID);
   gpio_mode_setup(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, MOTION_SENSOR_PIN_ID);
-  gpio_clear(GPIOA, RELAY_PIN);
+}
 
+void change_state(uint8_t new_state)
+{
+  state = new_state;
+}
+int main(void)
+{
+  clock_setup();
+  gpio_setup();
+  light_off();
   while (1)
   {
-    if (gpio_get(GPIOA, MOTION_SENSOR_PIN_ID) > 0)
+    switch (state)
     {
-      gpio_clear(GPIOA, RELAY_PIN);
-    }
-    else
-    {
-      gpio_set(GPIOA, RELAY_PIN);
+    case LIGHT_ON:
+      light_on();
+      change_state(2);
+      break;
+    case LIGHT_OFF:
+      light_off();
+      change_state(0);
+      break;
+    case DETECTING:
+      while (gpio_get(GPIOA, MOTION_SENSOR_PIN_ID) == 0)
+        ;
+      change_state(1);
+      break;
     }
   }
   return 0;
